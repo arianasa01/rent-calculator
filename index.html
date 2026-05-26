@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manchester Rent Split Calculator</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --card: #ffffff;
+      --ink: #1f2933;
+      --muted: #697386;
+      --line: #e5e7eb;
+      --accent: #245b50;
+      --accent-soft: #e4f0ed;
+      --warn: #8a5a00;
+      --warn-bg: #fff7df;
+      --good: #1f6f50;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(36, 91, 80, 0.12), transparent 34rem),
+        linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+      padding: 24px;
+    }
+
+    .wrap {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 24px 0 22px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.05em;
+      margin: 0;
+      max-width: 820px;
+    }
+
+    .intro {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.25fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(229, 231, 235, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: 1.18rem;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .small {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    label {
+      display: block;
+      font-weight: 750;
+      margin: 16px 0 7px;
+      font-size: 0.95rem;
+    }
+
+    .label-note {
+      display: block;
+      font-weight: 500;
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-top: 3px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #d5dae1;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-size: 1rem;
+      outline: none;
+      transition: box-shadow 160ms, border-color 160ms;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(36, 91, 80, 0.13);
+    }
+
+    .input-row {
+      position: relative;
+    }
+
+    .prefix {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .money-input { padding-left: 32px; }
+
+    .advanced {
+      margin-top: 14px;
+      border: 1px dashed #d5dae1;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fbfbfa;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 14px 15px;
+      font-weight: 760;
+      color: var(--accent);
+      user-select: none;
+    }
+
+    .advanced-body {
+      padding: 0 15px 15px;
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .hint {
+      background: var(--warn-bg);
+      border: 1px solid #ffe3a6;
+      color: var(--warn);
+      padding: 12px 13px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-top: 14px;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .result-box {
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      padding: 16px;
+      background: #fff;
+      min-height: 188px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .result-box.mid {
+      border-color: rgba(36, 91, 80, 0.35);
+      box-shadow: 0 12px 28px rgba(36, 91, 80, 0.11);
+    }
+
+    .tag {
+      display: inline-flex;
+      width: fit-content;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #f1f3f5;
+      color: #3d4856;
+      font-weight: 800;
+      font-size: 0.78rem;
+      margin-bottom: 10px;
+    }
+
+    .result-box.mid .tag {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .main-number {
+      font-size: clamp(1.6rem, 3vw, 2.35rem);
+      font-weight: 880;
+      letter-spacing: -0.055em;
+      margin: 3px 0 4px;
+    }
+
+    .per-person {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .breakdown {
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      display: grid;
+      gap: 7px;
+      font-size: 0.88rem;
+    }
+
+    .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #45505f;
+    }
+
+    .line strong { color: var(--ink); }
+
+    .footer-card {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #f8fafb;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .empty-state {
+      border: 1px dashed #cbd3dc;
+      border-radius: 18px;
+      padding: 16px;
+      background: #fbfbfa;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    .copy-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(36, 91, 80, 0.16);
+    }
+
+    button.secondary {
+      background: #eef2f1;
+      color: var(--accent);
+      box-shadow: none;
+    }
+
+    .toast {
+      color: var(--good);
+      font-size: 0.9rem;
+      font-weight: 700;
+      align-self: center;
+      opacity: 0;
+      transition: opacity 150ms;
+    }
+
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 900px) {
+      body { padding: 16px; }
+      .grid, .footer-card { grid-template-columns: 1fr; }
+      .results { grid-template-columns: 1fr; }
+      .two-cols { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <span class="pill">Manchester rent split calculator</span>
+      <h1>Check the monthly cost for two people before you choose a flat.</h1>
+      <p class="intro">Enter the monthly rent first. Council tax band and EPC rating are optional. If you leave them blank, the calculator gives low, mid and high estimates using reasonable Manchester assumptions.</p>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <div class="section-title">
+          <h2>Your flat details</h2>
+          <span class="small">Rent is required</span>
+        </div>
+
+        <label for="rent">Rent per month <span class="label-note">The advertised monthly rent for the whole property.</span></label>
+        <div class="input-row">
+          <span class="prefix">£</span>
+          <input class="money-input" id="rent" type="number" min="0" step="1" placeholder="Example: 1200" />
+        </div>
+
+        <label for="band">Council tax band <span class="label-note">Leave blank if you do not know it. Full price is used, with no discount.</span></label>
+        <select id="band">
+          <option value="">I do not know yet</option>
+          <option value="A">Band A</option>
+          <option value="B">Band B</option>
+          <option value="C">Band C</option>
+          <option value="D">Band D</option>
+          <option value="E">Band E</option>
+          <option value="F">Band F</option>
+          <option value="G">Band G</option>
+        </select>
+
+        <label for="epc">EPC rating <span class="label-note">Leave blank if it is not shown on the advert.</span></label>
+        <select id="epc">
+          <option value="">I do not know yet</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
+        </select>
+
+        <details class="advanced">
+          <summary>Optional: change bill assumptions</summary>
+          <div class="advanced-body">
+            <div class="two-cols">
+              <div>
+                <label for="waterOverride">Known water bill <span class="label-note">Optional monthly total.</span></label>
+                <div class="input-row">
+                  <span class="prefix">£</span>
+                  <input class="money-input" id="waterOverride" type="number" min="0" step="1" placeholder="Auto" />
+                </div>
+              </div>
+              <div>
+                <label for="energyOverride">Known gas/electric bill <span class="label-note">Optional monthly total.</span></label>
+                <div class="input-row">
+                  <span class="prefix">£</span>
+                  <input class="money-input" id="energyOverride" type="number" min="0" step="1" placeholder="Auto" />
+                </div>
+              </div>
+            </div>
+            <label for="internetOverride">Internet <span class="label-note">Default is £25 per month.</span></label>
+            <div class="input-row">
+              <span class="prefix">£</span>
+              <input class="money-input" id="internetOverride" type="number" min="0" step="1" value="25" />
+            </div>
+          </div>
+        </details>
+
+        <div class="hint">Tip: for unknown council tax, low uses Band A, mid uses Band D, and high uses Band G. For unknown EPC, bills assume you are average or slightly below average users.</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <h2>Monthly result per person</h2>
+          <span class="small">50 / 50 split</span>
+        </div>
+
+        <div id="empty" class="empty-state">Enter the monthly rent to see the low, mid and high estimate.</div>
+        <div id="results" class="results" style="display:none;"></div>
+
+        <div class="copy-row" id="copyTools" style="display:none;">
+          <button type="button" id="copySummary">Copy summary</button>
+          <button type="button" id="reset" class="secondary">Reset</button>
+          <span class="toast" id="toast">Copied</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer-card">
+      <div class="card">
+        <h2>Council tax used in the calculator</h2>
+        <p class="small">These yearly figures are converted into monthly amounts by dividing by 12.</p>
+        <table aria-label="Council tax bands">
+          <thead><tr><th>Band</th><th>Yearly</th><th>Monthly</th></tr></thead>
+          <tbody id="taxTable"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Bill assumptions</h2>
+        <p class="small">Internet is fixed at £25 unless you change it. Water and gas/electric are estimates for two people and can be replaced with known values in the optional section.</p>
+        <table aria-label="Bill assumptions">
+          <thead><tr><th>Scenario</th><th>Water</th><th>Gas/electric</th><th>Internet</th></tr></thead>
+          <tbody id="billTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const councilYearly = {
+      A: 1541.36,
+      B: 1798.26,
+      C: 2055.14,
+      D: 2312.04,
+      E: 2825.82,
+      F: 3339.61,
+      G: 3853.40
+    };
+
+    const scenarioBands = { low: "A", mid: "D", high: "G" };
+
+    const waterDefault = { low: 30, mid: 40, high: 50 };
+
+    const energyByEpc = {
+      unknown: { low: 80, mid: 110, high: 150 },
+      A: { low: 55, mid: 75, high: 100 },
+      B: { low: 65, mid: 90, high: 120 },
+      C: { low: 80, mid: 115, high: 155 },
+      D: { low: 105, mid: 145, high: 190 },
+      E: { low: 130, mid: 180, high: 240 },
+      F: { low: 165, mid: 230, high: 300 },
+      G: { low: 210, mid: 290, high: 380 }
+    };
+
+    const labels = {
+      low: "Low but reasonable",
+      mid: "Average estimate",
+      high: "High but reasonable"
+    };
+
+    const notes = {
+      low: "Best case, but still realistic.",
+      mid: "The number I would mainly compare flats with.",
+      high: "Safer number if the flat is expensive to run."
+    };
+
+    const els = {
+      rent: document.getElementById("rent"),
+      band: document.getElementById("band"),
+      epc: document.getElementById("epc"),
+      waterOverride: document.getElementById("waterOverride"),
+      energyOverride: document.getElementById("energyOverride"),
+      internetOverride: document.getElementById("internetOverride"),
+      results: document.getElementById("results"),
+      empty: document.getElementById("empty"),
+      taxTable: document.getElementById("taxTable"),
+      billTable: document.getElementById("billTable"),
+      copyTools: document.getElementById("copyTools"),
+      copySummary: document.getElementById("copySummary"),
+      reset: document.getElementById("reset"),
+      toast: document.getElementById("toast")
+    };
+
+    function pounds(n) {
+      return new Intl.NumberFormat("en-GB", {
+        style: "currency",
+        currency: "GBP",
+        maximumFractionDigits: 0
+      }).format(n || 0);
+    }
+
+    function poundsPence(n) {
+      return new Intl.NumberFormat("en-GB", {
+        style: "currency",
+        currency: "GBP",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(n || 0);
+    }
+
+    function valueOrNull(input) {
+      const val = parseFloat(input.value);
+      return Number.isFinite(val) && val >= 0 ? val : null;
+    }
+
+    function monthlyCouncilForScenario(scenario) {
+      const chosenBand = els.band.value || scenarioBands[scenario];
+      return {
+        band: chosenBand,
+        amount: councilYearly[chosenBand] / 12,
+        exact: Boolean(els.band.value)
+      };
+    }
+
+    function billsForScenario(scenario) {
+      const epc = els.epc.value || "unknown";
+      const waterKnown = valueOrNull(els.waterOverride);
+      const energyKnown = valueOrNull(els.energyOverride);
+      const internetKnown = valueOrNull(els.internetOverride);
+
+      return {
+        water: waterKnown !== null ? waterKnown : waterDefault[scenario],
+        energy: energyKnown !== null ? energyKnown : energyByEpc[epc][scenario],
+        internet: internetKnown !== null ? internetKnown : 25,
+        epc,
+        waterExact: waterKnown !== null,
+        energyExact: energyKnown !== null
+      };
+    }
+
+    function calculate() {
+      const rent = valueOrNull(els.rent);
+      if (rent === null || rent === 0) {
+        els.results.style.display = "none";
+        els.copyTools.style.display = "none";
+        els.empty.style.display = "block";
+        return [];
+      }
+
+      const output = ["low", "mid", "high"].map((scenario) => {
+        const council = monthlyCouncilForScenario(scenario);
+        const bills = billsForScenario(scenario);
+        const householdTotal = rent + council.amount + bills.water + bills.energy + bills.internet;
+        const perPerson = householdTotal / 2;
+        return { scenario, rent, council, bills, householdTotal, perPerson };
+      });
+
+      renderResults(output);
+      return output;
+    }
+
+    function renderResults(rows) {
+      els.empty.style.display = "none";
+      els.copyTools.style.display = "flex";
+      els.results.style.display = "grid";
+      els.results.innerHTML = rows.map(row => {
+        const unknownText = [];
+        if (!row.council.exact) unknownText.push(`Council estimated with Band ${row.council.band}`);
+        if (row.bills.epc === "unknown" && !row.bills.energyExact) unknownText.push("EPC unknown");
+        if (row.bills.energyExact) unknownText.push("Known energy used");
+        if (row.bills.waterExact) unknownText.push("Known water used");
+
+        return `
+          <article class="result-box ${row.scenario === "mid" ? "mid" : ""}">
+            <div>
+              <span class="tag">${labels[row.scenario]}</span>
+              <div class="main-number">${poundsPence(row.perPerson)}</div>
+              <div class="per-person">each person per month</div>
+              <div class="small">${notes[row.scenario]}</div>
+            </div>
+            <div class="breakdown">
+              <div class="line"><span>Rent share</span><strong>${poundsPence(row.rent / 2)}</strong></div>
+              <div class="line"><span>Council share</span><strong>${poundsPence(row.council.amount / 2)}</strong></div>
+              <div class="line"><span>Bills share</span><strong>${poundsPence((row.bills.water + row.bills.energy + row.bills.internet) / 2)}</strong></div>
+              <div class="line"><span>Household total</span><strong>${poundsPence(row.householdTotal)}</strong></div>
+              <div class="small">${unknownText.join(" · ")}</div>
+            </div>
+          </article>
+        `;
+      }).join("");
+      renderBillTable();
+    }
+
+    function renderTaxTable() {
+      els.taxTable.innerHTML = Object.entries(councilYearly).map(([band, yearly]) => `
+        <tr><td>Band ${band}</td><td>${poundsPence(yearly)}</td><td>${poundsPence(yearly / 12)}</td></tr>
+      `).join("");
+    }
+
+    function renderBillTable() {
+      const internet = valueOrNull(els.internetOverride) ?? 25;
+      const epc = els.epc.value || "unknown";
+      const energySet = energyByEpc[epc];
+      const waterKnown = valueOrNull(els.waterOverride);
+      const energyKnown = valueOrNull(els.energyOverride);
+
+      els.billTable.innerHTML = ["low", "mid", "high"].map(scenario => `
+        <tr>
+          <td>${scenario.charAt(0).toUpperCase() + scenario.slice(1)}</td>
+          <td>${pounds(waterKnown ?? waterDefault[scenario])}</td>
+          <td>${pounds(energyKnown ?? energySet[scenario])}</td>
+          <td>${pounds(internet)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function buildSummary(rows) {
+      if (!rows.length) return "";
+      const bandText = els.band.value ? `Council tax: Band ${els.band.value}` : "Council tax: unknown, estimated with Band A / D / G";
+      const epcText = els.epc.value ? `EPC: ${els.epc.value}` : "EPC: unknown";
+      const lines = rows.map(row => `${labels[row.scenario]}: ${poundsPence(row.perPerson)} each per month, household total ${poundsPence(row.householdTotal)}`);
+      return [
+        "Manchester rent split estimate",
+        `Rent: ${poundsPence(rows[0].rent)} per month`,
+        bandText,
+        epcText,
+        ...lines
+      ].join("\n");
+    }
+
+    function copySummary() {
+      const rows = calculate();
+      const text = buildSummary(rows);
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        els.toast.classList.add("show");
+        setTimeout(() => els.toast.classList.remove("show"), 1300);
+      });
+    }
+
+    function resetAll() {
+      els.rent.value = "";
+      els.band.value = "";
+      els.epc.value = "";
+      els.waterOverride.value = "";
+      els.energyOverride.value = "";
+      els.internetOverride.value = "25";
+      calculate();
+      renderBillTable();
+    }
+
+    [els.rent, els.band, els.epc, els.waterOverride, els.energyOverride, els.internetOverride].forEach(el => {
+      el.addEventListener("input", calculate);
+      el.addEventListener("change", calculate);
+    });
+
+    els.copySummary.addEventListener("click", copySummary);
+    els.reset.addEventListener("click", resetAll);
+
+    renderTaxTable();
+    renderBillTable();
+  </script>
+</body>
+</html>
